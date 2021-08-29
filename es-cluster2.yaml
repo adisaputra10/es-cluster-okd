@@ -1,0 +1,98 @@
+## Node 1 As Master
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: es
+  name: elasticsearch2
+  namespace: es-cluster
+spec:
+  ports:
+  - name: 9200-tcp
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+  - name: 9300-tcp
+    port: 9300
+    protocol: TCP
+    targetPort: 9300
+  selector:
+    deploymentconfig: elasticsearch2
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: es
+  name: elasticsearch2
+  namespace: es-cluster
+spec:
+  replicas: 1
+  selector:
+    app: es
+    deploymentconfig: elasticsearch2
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: es
+        deploymentconfig: elasticsearch2
+    spec:
+      containers:
+      - env:
+         - name: cluster.name
+           value: 'cluster-elasticsearch'
+         - name: node.name
+           value: 'elasticsearch2'
+         - name: ES_JAVA_OPTS
+           value: '-Xms512m -Xmx512m'
+         - name: xpack.monitoring.collection.enabled
+           value: 'true'
+         - name: xpack.monitoring.exporters.remote.type
+           value: 'http'
+         - name: xpack.monitoring.exporters.remote.host
+           value: 'monitor'
+         - name: discovery.seed_hosts
+           value: 'elasticsearch1,elasticsearch2,elasticsearch3,elasticsearch-ingest'
+         - name: cluster.initial_master_nodes
+           value: 'elasticsearch1,elasticsearch2,elasticsearch3,elasticsearch-ingest'
+         - name: ELASTIC_PASSWORD
+           value: 'abc123'
+         - name: xpack.security.enabled
+           value: 'true'
+         - name: xpack.security.audit.enabled
+           value: 'true'
+         - name: xpack.monitoring.exporters.remote.auth.username
+           value: 'elastic'
+         - name: xpack.monitoring.exporters.remote.auth.password
+           value: 'abc123'
+         - name: ELASTIC_USERNAME
+           value: 'elastic'
+        image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
+        imagePullPolicy: Always
+        name: elasticsearch2
+        ports:
+        - containerPort: 9200
+          protocol: TCP
+        - containerPort: 9300
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: elasticsearch2
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: elasticsearch2

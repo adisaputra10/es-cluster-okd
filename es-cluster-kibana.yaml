@@ -1,0 +1,66 @@
+## Node 1 As Master
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: es
+  name: kibana-dashboard
+  namespace: es-cluster
+spec:
+  ports:
+  - name: 5601-tcp
+    port: 5601
+    protocol: TCP
+    targetPort: 5601
+  selector:
+    deploymentconfig: kibana-dashboard
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: es
+  name: kibana-dashboard
+  namespace: es-cluster
+spec:
+  replicas: 1
+  selector:
+    app: es
+    deploymentconfig: kibana-dashboard
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: es
+        deploymentconfig: kibana-dashboard
+    spec:
+      containers:
+      - env:
+        - name: ELASTICSEARCH_PASSWORD
+          value: 'abc123'
+        - name: ELASTICSEARCH_USERNAME
+          value: 'elastic'
+        - name: xpack.security.enabled
+          value: 'true'
+        - name: ELASTICSEARCH_HOSTS
+          value: 'http://monitor:9200'
+        image: docker.elastic.co/kibana/kibana:7.13.2
+        imagePullPolicy: Always
+        name: kibana-dashboard
+        ports:
+        - containerPort: 5601
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
