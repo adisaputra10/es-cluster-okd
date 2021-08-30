@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: test
+  name: nfs1-pvc
+spec:
+  storageClassName: nfs-direct
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
