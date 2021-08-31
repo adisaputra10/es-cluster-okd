@@ -1,0 +1,19 @@
+## Node 1 As 
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: es
+  name: elasticsearch-node
+  namespace: test
+spec:
+  ports:
+  - name: 9200-tcp
+    port: 9200
+    protocol: TCP
+    targetPort: 9200
+    nodePort: 30001
+  selector:
+    deploymentconfig: elasticsearch2
+  sessionAffinity: None
+  type: NodePort
