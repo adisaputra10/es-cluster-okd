@@ -1,0 +1,97 @@
+## Node 1 As 
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: es
+  name: logstash-node
+  namespace: test
+spec:
+  ports:
+  - name: 5044-tcp
+    port: 5044
+    protocol: TCP
+    targetPort: 5044
+  selector:
+    deploymentconfig: logstash
+  sessionAffinity: None
+  type: NodePort
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: es
+  name: logstash
+  namespace: test
+spec:
+  ports:
+  - name: 5044-tcp
+    port: 5044
+    protocol: TCP
+    targetPort: 5044
+  - name: 5000-tcp
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    deploymentconfig: logstash
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: es
+  name: logstash
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    app: es
+    deploymentconfig: logstash
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: es
+        deploymentconfig: logstash
+    spec:
+      containers:
+      - image: docker.elastic.co/logstash/logstash:7.13.2
+        imagePullPolicy: Always
+        name: logstash
+        ports:
+        - containerPort: 5044
+          protocol: TCP
+        - containerPort: 5000
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /usr/share/logstash/pipeline/logstash.conf
+          name: logstash
+          subPath: logstash.conf
+        - mountPath: /usr/share/logstash/templates/logstash.template.json
+          name: logstash-temp
+          subPath: logstash.template.json
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: logstash
+          name: logstash
+        - configMap:
+            defaultMode: 420
+            name: logstash-temp
+          name: logstash-temp
