@@ -31,4 +31,4 @@ data:
 kind: ConfigMap
 metadata:
   name: logstash-temp
-  namespace: test
+  namespace: es-cluster

@@ -39,4 +39,4 @@ data:
 kind: ConfigMap
 metadata:
   name: logstash
-  namespace: test
+  namespace: es-cluster

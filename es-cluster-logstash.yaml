@@ -5,7 +5,7 @@ metadata:
   labels:
     app: es
   name: logstash-node
-  namespace: test
+  namespace: es-cluster
 spec:
   ports:
   - name: 5044-tcp
@@ -23,7 +23,7 @@ metadata:
   labels:
     app: es
   name: logstash
-  namespace: test
+  namespace: es-cluster
 spec:
   ports:
   - name: 5044-tcp
@@ -48,7 +48,7 @@ metadata:
   labels:
     app: es
   name: logstash
-  namespace: test
+  namespace: es-cluster
 spec:
   replicas: 1
   selector:

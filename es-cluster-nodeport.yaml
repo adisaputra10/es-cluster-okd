@@ -5,7 +5,7 @@ metadata:
   labels:
     app: es
   name: elasticsearch-node
-  namespace: test
+  namespace: es-cluster
 spec:
   ports:
   - name: 9200-tcp
