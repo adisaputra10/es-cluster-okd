@@ -40,3 +40,5 @@ spec:
         - name: nginx
           persistentVolumeClaim:
              claimName: nfs-direct-pvc
+      securityContext:
+        allowPrivilegeEscalation: false
